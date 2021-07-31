@@ -1,5 +1,5 @@
-SRC!= ls *.nasm
-OBJ!= ls *.nasm | sed -e 's/nasm/bin/'
+SRC!= ls boot.nasm
+OBJ!= ls boot.nasm | sed -e 's/nasm/bin/'
 
 all: stage1
 	@echo "[1] Done."
