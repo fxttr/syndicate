@@ -35,11 +35,7 @@
 	
 [BITS 16]
 [ORG 0x7C00]
-; Includes
-%include "print.nasm"
-%include "fio.nasm"
-%include "bios.nasm"
-	
+
 jmp short start
 
 start:
@@ -66,11 +62,16 @@ boot_init:
 	mov si, __msg_kernelfound
 	call printer
 
+.error:
 	jmp $		; Better never reach this.
 	
-
-__msg_bootup: db `\r\nSyndicate 0.01\r\nBooting kernel...\r\n`, 0x00
-__msg_kernelfound: db `\r\nKernel found.\r\n`, 0x00
+; Includes
+%include "print.nasm"
+%include "fio.nasm"
+%include "bios.nasm"
+	
+__msg_bootup: db 0xD, 0xA, 'Syndicate 0.01', 0xD, 0xA, 'Booting kernel...', 0xD, 0xA, 0x00
+__msg_kernelfound: db 0xD, 0xA, 'Kernel found.', 0xD, 0xA, 0x00
 __os_drv:      db 0x00
 	
 times 510 - ($-$$) db 0x00	; Fill remaining memory
