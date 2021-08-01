@@ -26,5 +26,30 @@
 	
 %include "fat32.nasm"
 
+;; ----------------------------------------------------------
+;; Find the kernel on a FAT32 drive
+;; ----------------------------------------------------------
 detect_kern:
-ret
+	call prepare_fs		; Preparing the bootloader to read the FAT32 drive
+
+;; Getting file informations
+	mov di, 0x0200 + 0x20	; Get first file entry
+	mov dx, WORD[di + 0x001A] ; Offset of the file entry
+	mov WORD[__cluster], dx
+
+;; Preparing kernel location
+	mov ax, 0x0100		; Location
+	mov es, ax		; Setting extra segment
+	mov bx, 0x00
+
+;; Reading kernel cluster
+	mov cx, 0x0008
+	mov ax, WORD[__cluster]
+	call _lba_conv
+	call _read_disk_sectors
+
+	push WORD 0x0100
+	push WORD 0x0000
+	retf
+
+__cluster: dw 0x0000
