@@ -49,8 +49,6 @@ boot_init:
 	mov ss, ax		; Set stack segment
 	mov sp, 0x7c00		; Set stack pointer
 	sti			; Enable interrupts
-
-	mov [__os_drv], dl	; Save os drive ID
 	
 	mov si, __msg_bootup
 	call printer
@@ -62,8 +60,19 @@ boot_init:
 	mov si, __msg_kernelfound
 	call printer
 
+;; Jumping to kernel
+	push WORD 0x0100
+	push WORD 0x0000
+	retf
+
 .error:
 	jmp $		; Better never reach this.
+;; Bye...
+
+;; ---------------------------------------------------------
+;; ---------------------------------------------------------
+;; ---------------------------------------------------------
+;; ---------------------------------------------------------
 	
 ; Includes
 %include "print.nasm"
@@ -72,7 +81,6 @@ boot_init:
 	
 __msg_bootup: db 0xD, 0xA, 'Syndicate 0.01', 0xD, 0xA, 'Booting kernel...', 0xD, 0xA, 0x00
 __msg_kernelfound: db 0xD, 0xA, 'Kernel found.', 0xD, 0xA, 0x00
-__os_drv:      db 0x00
 	
 times 510 - ($-$$) db 0x00	; Fill remaining memory
 dw 0xAA55			; Magicnumber which marks this as bootable for BIOS

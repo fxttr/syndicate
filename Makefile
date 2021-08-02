@@ -12,9 +12,19 @@ ${OBJ}: ${SRC}
 
 .PHONY: clean run
 
-run: all
-	qemu-system-x86_64 -hda loader.bin
+img: clean all
+	@echo "[2] Building Image"
+	@truncate -s 30m os.img
+	@mdconfig os.img
+	@gpart create -s mbr md0
+	@gpart add -t \!12 md0
+	@newfs_msdos /dev/md0s1
+	@dd if=loader.bin of=os.img seek=0 count=1 bs=512 conv=notrunc
+
+run: img
+	qemu-system-x86_64 -hda /dev/md0
 
 clean:
 	@echo "Cleaning"
-	@rm -rf *.bin *.o
+	@-mdconfig -du md0
+	@rm -rf *.bin *.o *.img

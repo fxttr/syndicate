@@ -55,12 +55,7 @@ detect_bios:
 	
 
 _detect_bios_error:
-	mov bx, __msg_detect_bios_error
-	call printer
-	
-	shr ax, 8
-	mov [__msg_detect_bios_error_code], ax
-	mov bx, [__msg_detect_bios_error_code]
+	mov si, __msg_detect_bios_error
 	call printer
 	
 	jmp $
@@ -74,6 +69,5 @@ _detect_bios_success:
 	ret
 	
 
-__msg_detect_bios_error: db 0xD, 0xE, `Error: Could not detect BIOS: `, 0x00
-__msg_detect_bios_error_code: db 0x00, 0xD, 0xE, 0x00
+__msg_detect_bios_error: db 0xD, 0xE, `Error: Could not detect BIOS.`, 0x00
 __vesa_info_buffer: db 256
