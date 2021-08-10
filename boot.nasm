@@ -47,13 +47,17 @@ boot_init:
 	mov ds, ax		; Set data segment
 	mov es, ax		; Set extra segment
 	mov ss, ax		; Set stack segment
-	mov sp, 0x7c00		; Set stack pointer
+	mov sp, 0x7C00		; Set stack pointer
 	sti			; Enable interrupts
+	cld
+
+	mov [__drive_number], dl
 	
 	mov si, __msg_bootup
 	call printer
 
-	call detect_bios
+	;; We disable this for now. We need more space for the fat16 implementation.
+	;;call detect_bios
 
 	call detect_kern
 	
@@ -77,7 +81,7 @@ boot_init:
 ; Includes
 %include "print.nasm"
 %include "fio.nasm"
-%include "bios.nasm"
+;;%include "bios.nasm"
 	
 __msg_bootup: db 0xD, 0xA, 'Syndicate 0.01', 0xD, 0xA, 'Booting kernel...', 0xD, 0xA, 0x00
 __msg_kernelfound: db 0xD, 0xA, 'Kernel found.', 0xD, 0xA, 0x00

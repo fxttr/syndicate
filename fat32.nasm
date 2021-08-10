@@ -24,17 +24,43 @@
 ;; fat32.inc
 ;; This code tries to detect and read a FAT32 filesystem.
 ;; Only reading supported.
+;; https://www.pjrc.com/tech/8051/ide/fat32.html
+;;
+;; A DOS partition table given,
+;; the MBR is at C0H0S1:
+;; +--------+-------------+------+
+;; | Offset | Description | Size |
+;; +--------+-------------+------+
+;; | 0x000  | Bootloader  | 446  |
+;; +--------+-------------+------+
+;; | 0x1BE  | 1st Part    | 16   |
+;; +--------+-------------+------+
+;; | 0x1CE  | 2nd Part    | 16   |
+;; +--------+-------------+------+
+;; | 0x1DE  | 3rd Part    | 16   |
+;; +--------+-------------+------+
+;; | 0x1EE  | 4th Part    | 16   |
+;; +--------+-------------+------+
+;; | 0x1FE  | Bootable    | 2    |
+;; +--------+-------------+------+
+;;
+;; We want to read a FAT32 partiton, smaller than 32MiB.
+;; So our code is 0x11, or 0x12 for FAT32LBA (See Makefile, run)
+;;
+;; Output from newfs_msdos -F32 -b 512:
+;; BytesPerSec=512 SecPerClust=1 ResSectors=32 FATs=2 Media=0xf0 SecPerTrack=9 Heads=32
 
+	
 __oem_id:                  db 		"Syndicate"
-__bytes_per_sector:        dw 		0x0200
+__bytes_per_sector:        dw 		0x0200 ; We read 512 byte sectors
 __sectors_per_cluster:     db 		0x01
-__reserved_sectors:        dw 		0x0001
-__total_FATs:              db 		0x02
-__max_root_entries:        dw 		0x00e0
+__reserved_sectors:        dw 		0x32
+__total_FATs:              db 		0x0002
+__max_root_entries:        dw 		0x0800
 __number_of_sectors:       dw 		0x0000
-__media_descriptor:        db 		0xF8
+__media_descriptor:        db 		0xF0
 __sectors_per_FAT:         dw 		0x0009
-__sectors_per_track:       dw 		0x0012
+__sectors_per_track:       dw 		0x0009
 __sectors_per_head:        dw 		0x0002
 __hidden_sectors:          dd 		0x00000000
 __total_sectors:     	   dd 		0x00000B40		
@@ -48,20 +74,20 @@ __drive_number:            db 		0x00
 __reserved_byte:           db   	0x00
 __signature:               db 		0x29
 __volume_id:               dd 		0xFFFFFFFF
-__volume_label:            db 		"Syndicate boot"
-__system_id:               db 		"FAT16   "
+__volume_label:            db 		"boot"
+__system_id:               db 		"FAT32   "
 
 ;; ----------------------------------------------------------
-;; Preparing the bootloader for reading FAT32 partitions
+;; Preparing the bootloader for reading FAT16 partitions
 ;; ----------------------------------------------------------
 prepare_fs:
 ;; Computing data location
 	mov cx, WORD[__sectors_per_cluster] ; Get size of a cluster
 	mov al, BYTE[__total_FATs]	    ; Get number of FATs
-	mul WORD[__big_sectors_per_FAT]	    ; Multiplied by the number of sectors per FAT
+	mul WORD[__sectors_per_FAT]	    ; Multiplied by the number of sectors per FAT
 	add ax, WORD[__reserved_sectors]    ; Add the reserved sectors to find the start of the Data Area
 	mov WORD[__datasector], ax	    ; Store the address
-
+	
 ;; Read computed data area into memory
 	mov ax, WORD[__root_directory_start]
 	call _lba_conv
