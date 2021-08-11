@@ -61,7 +61,7 @@ boot_init:
 
 	call detect_kern
 	
-	mov si, __msg_kernelfound
+	mov si, __msg_partfound
 	call printer
 
 ;; Jumping to kernel
@@ -82,9 +82,9 @@ boot_init:
 %include "print.nasm"
 %include "fio.nasm"
 ;;%include "bios.nasm"
-	
-__msg_bootup: db 0xD, 0xA, 'Syndicate 0.01', 0xD, 0xA, 'Booting kernel...', 0xD, 0xA, 0x00
-__msg_kernelfound: db 0xD, 0xA, 'Kernel found.', 0xD, 0xA, 0x00
+__test: db "Hello", 0x00
+__msg_bootup: db 0xD, 0xA, 'Syndicate 0.01', 0xD, 0xA, 'Trying to detect kernel...', 0xD, 0xA, 0x00
+__msg_partfound: db 0xD, 0xA, 'Boot partition found, trying to load kernel...', 0xD, 0xA, 0x00
 	
 times 510 - ($-$$) db 0x00	; Fill remaining memory
 dw 0xAA55			; Magicnumber which marks this as bootable for BIOS

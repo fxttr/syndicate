@@ -44,13 +44,14 @@ detect_kern:
 ;; Preparing kernel location
 	mov ax, 0x0100		; Location
 	mov es, ax		; Setting extra segment
-	mov bx, 0x00
+	xor bx, bx
 
 ;; Reading kernel cluster
 	mov cx, 0x0008
 	mov ax, WORD[__cluster]
 	call _lba_conv
 	call _read_disk_sectors
+
 
 	pop cx
 	pop bx
