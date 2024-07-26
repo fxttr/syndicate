@@ -23,16 +23,36 @@
 
 ;; bios.nasm
 ;; Routine for detecting the BIOS
-	
+
+;; Try to detect EGA, VGA or VESA BIOS
 detect_bios:
 	push ax
 	push bx
 	push cx
 	push dx
 
-	push cx
+	;; Get EGA Info http://www.ctyme.com/intr/rb-0162.htm
+	mov ah, 0x12
+	mov bl, 0x10
+	int 0x10
+	cmp bl, 0x10
+	jne _detect_bios_success
 
-	mov ah, 0x02
+	;; Get VGA Info http://www.ctyme.com/intr/rb-0219.htm
+	mov ax, 0x1A00
+	int 0x10
+	cmp al, 0x1A		; Function was supported
+	je _detect_bios_success
+
+        ;; Get SuperVGA Info http://www.ctyme.com/intr/rb-0273.htm
+	mov ax, __vesa_info_buffer
+	mov es, ax
+	xor di, di
+	mov ax, 0x4F00
+	int 0x10
+	cmp ax, 0x004F
+	je _detect_bios_success
+	
 
 _detect_bios_error:
 	mov bx, __msg_detect_bios_error
@@ -45,5 +65,15 @@ _detect_bios_error:
 	
 	jmp $
 
+_detect_bios_success:
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+
+	ret
+	
+
 __msg_detect_bios_error: db `\r\nError: Could not detect BIOS: `, 0x00
 __msg_detect_bios_error_code: db 0x00, `\r\n`, 0x00
+__vesa_info_buffer: db 256
