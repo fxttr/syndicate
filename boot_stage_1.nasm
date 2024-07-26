@@ -34,22 +34,38 @@
 ;;
 	
 [BITS 16]
-[ORG 0x7c00]
+[ORG 0x7C00]
 	jmp boot_init
 	
 	; Includes
-%include "write.inc"
-%include "fio.inc"
+%include "print.nasm"
+%include "fio.nasm"
 
 boot_init: 
 	cli			; Disable Interrupts
+	mov bp, 0x0600		; Set base/stack pointer
+	mov sp, bp
+
+	mov [os_drv], dl	; Save os drive ID
+	
+	mov bx, msg_bootup
+	call printer
+
 	call detect_kern
+	cmp [cx], 0x1
+	je halt
+	
+	mov bx, msg_kernelfound
+	call printer
 
 halt:
-	jmp halt
+	jmp halt		; Better never reach this.
 	
+
+msg_bootup: db `\r\nBooting up SynOS\r\nSearching for kernel...\r\n`, 0
+msg_kernelfound: db `\r\nKernel found.\r\n`, 0
+os_drv:      db 0x00
 	
-times 510 - ($-$$) db 0		; Fill remaining memory
-dw 0xaa55			; Magicnumber which marks this as bootable for BIOS
-	
-kern_bin db 'kern.bin' ; Our stage2 target. We'll try to locate it.
+times 510 - ($-$$) db 0x00	; Fill remaining memory
+dw 0xAA55			; Magicnumber which marks this as bootable for BIOS
+
