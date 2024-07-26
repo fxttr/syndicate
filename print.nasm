@@ -21,7 +21,7 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-;; print.inc
+;; print.nasm
 ;; Routines to output strings to TTY
 
 ;; How to use:
@@ -38,7 +38,7 @@ printer:
 	mov ah, 0x0E 		; BIOS Printing Mode
 
 _printer_loop:
-	cmp [bx], 0		; Check if character is 0
+	cmp byte[bx], 0		; Check if character is 0
 	je _printer_loop_end
 
 	mov al,[bx]		; Load character

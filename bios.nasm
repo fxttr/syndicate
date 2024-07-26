@@ -1,4 +1,4 @@
-;; Copyright (c) 2020, Florian Büstgens
+;; Copyright (c) 2021, Florian Buestgens
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -10,10 +10,10 @@
 ;;        this list of conditions and the following disclaimer in the
 ;;        documentation and/or other materials provided with the distribution.
 ;;
-;; THIS SOFTWARE IS PROVIDED BY <copyright holder> ''AS IS'' AND ANY
+;; THIS SOFTWARE IS PROVIDED BY Florian Buestgens ''AS IS'' AND ANY
 ;; EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 ;; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-;; DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
+;; DISCLAIMED. IN NO EVENT SHALL Florian Buestgens BE LIABLE FOR ANY
 ;; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 ;; (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 ;; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -21,51 +21,29 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-;;  ____                  _ _           _
-;; / ___| _   _ _ __   __| (_) ___ __ _| |_ ___
-;; \___ \| | | | '_ \ / _` | |/ __/ _` | __/ _ \
-;;  ___) | |_| | | | | (_| | | (_| (_| | ||  __/
-;; |____/ \__, |_| |_|\__,_|_|\___\__,_|\__\___|
-;;        |___/
-
-;; Syndicate BOOTLOADER
-;;
-;; Stage 1
-;;
+;; bios.nasm
+;; Routine for detecting the BIOS
 	
-[BITS 16]
-[ORG 0x7C00]
-	jmp boot_init
-	
-	; Includes
-%include "print.nasm"
-%include "fio.nasm"
-%include "bios.nasm"
+detect_bios:
+	push ax
+	push bx
+	push cx
+	push dx
 
-boot_init: 
-	cli			; Disable Interrupts
-	mov bp, 0x0600		; Set base/stack pointer
-	mov sp, bp
+	push cx
 
-	mov [__os_drv], dl	; Save os drive ID
-	
-	mov bx, __msg_bootup
+	mov ah, 0x02
+
+_detect_bios_error:
+	mov bx, __msg_detect_bios_error
 	call printer
-
-	call detect_bios
-
-	call detect_kern
 	
-	mov bx, __msg_kernelfound
+	shr ax, 8
+	mov [__msg_detect_bios_error_code], ax
+	mov bx, [__msg_detect_bios_error_code]
 	call printer
-
-	jmp $		; Better never reach this.
 	
+	jmp $
 
-__msg_bootup: db `\r\nSyndicate 0.01 (SynOS Bootloader)\r\nBooting kernel...\r\n`, 0x00
-__msg_kernelfound: db `\r\nKernel found.\r\n`, 0x00
-__os_drv:      db 0x00
-	
-times 510 - ($-$$) db 0x00	; Fill remaining memory
-dw 0xAA55			; Magicnumber which marks this as bootable for BIOS
-
+__msg_detect_bios_error: db `\r\nError: Could not detect BIOS: `, 0x00
+__msg_detect_bios_error_code: db 0x00, `\r\n`, 0x00

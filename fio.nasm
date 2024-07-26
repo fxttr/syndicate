@@ -24,7 +24,7 @@
 ;; fio.inc
 ;; Routines to find the kernel on a FAT32 partition
 	
-%include "fat32.inc"
+%include "fat32.nasm"
 
 detect_kern:
 ret
