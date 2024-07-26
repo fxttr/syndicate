@@ -26,28 +26,30 @@
 
 ;; How to use:
 ;;
-;; mov bx, MSG
+;; mov si, MSG
 ;; call printer
 ;;
 [BITS 16]
 	
 printer:
-	push ax			; Save registers
 	push bx
 
 	mov ah, 0x0E 		; BIOS Printing Mode
+	mov bx, 0x00
 
-_printer_loop:
-	cmp byte[bx], 0		; Check if character is 0
-	je _printer_loop_end
+.loop:
+	lodsb			; For reference see https://www.i8086.de/asm/8086-88-asm-lodsb.html
+	cmp al, 0		; If the null terminator is reached, we're finished.
+	je .end
 
-	mov al,[bx]		; Load character
-	int 0x10		; Trigger print
-
-	inc bx			; Next character
-	jmp _printer_loop
+	call _print_char
+	jmp .loop
 	
-_printer_loop_end:
-	pop ax			; Restore registers
+.end:
 	pop bx
+	ret
+
+_print_char:
+	mov, ah, 0x0E
+	int 0x10
 	ret

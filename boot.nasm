@@ -35,34 +35,41 @@
 	
 [BITS 16]
 [ORG 0x7C00]
-	jmp boot_init
+jmp short start
 	
 	; Includes
 %include "print.nasm"
 %include "fio.nasm"
 %include "bios.nasm"
 
+start:
+	jmp 0:boot_init
+
 boot_init: 
-	cli			; Disable Interrupts
-	mov bp, 0x0600		; Set base/stack pointer
-	mov sp, bp
+	cli			; Disable interrupts
+	mov ax, 0x00
+	mov ds, ax		; Set data segment
+	mov es, ax		; Set extra segment
+	mov ss, ax		; Set stack segment
+	mov sp, 0x7c00		; Set stack pointer
+	sti			; Enable interrupts
 
 	mov [__os_drv], dl	; Save os drive ID
 	
-	mov bx, __msg_bootup
+	mov si, __msg_bootup
 	call printer
 
 	call detect_bios
 
 	call detect_kern
 	
-	mov bx, __msg_kernelfound
+	mov si, __msg_kernelfound
 	call printer
 
 	jmp $		; Better never reach this.
 	
 
-__msg_bootup: db `\r\nSyndicate 0.01 (SynOS Bootloader)\r\nBooting kernel...\r\n`, 0x00
+__msg_bootup: db `\r\nSyndicate 0.01\r\nBooting kernel...\r\n`, 0x00
 __msg_kernelfound: db `\r\nKernel found.\r\n`, 0x00
 __os_drv:      db 0x00
 	
