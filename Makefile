@@ -14,11 +14,11 @@ ${OBJ}: ${SRC}
 
 img: clean all
 	@echo "[2] Building Image"
-	@truncate -s 30m os.img
+	@truncate -s 128m os.img
 	@mdconfig os.img
 	@gpart create -s mbr md0
-	@gpart add -t \!12 md0
-	@newfs_msdos /dev/md0s1
+	@gpart add -t \!11 md0
+	@newfs_msdos -F32 -b 512 /dev/md0s1
 	@dd if=loader.bin of=os.img seek=0 count=1 bs=512 conv=notrunc
 
 run: img
