@@ -35,12 +35,12 @@
 	
 [BITS 16]
 [ORG 0x7C00]
-jmp short start
-	
-	; Includes
+; Includes
 %include "print.nasm"
 %include "fio.nasm"
 %include "bios.nasm"
+	
+jmp short start
 
 start:
 	jmp 0:boot_init
