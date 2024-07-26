@@ -10,7 +10,10 @@ stage1: ${OBJ}
 ${OBJ}: ${SRC}
 	@nasm -f bin ${.ALLSRC} -o loader.bin
 
-.PHONY: clean
+.PHONY: clean run
+
+run: all
+	qemu-system-x86_64 -hda loader.bin
 
 clean:
 	@echo "Cleaning"
