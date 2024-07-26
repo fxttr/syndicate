@@ -1,5 +1,5 @@
-SRC=$(shell ls boot.nasm)
-OBJ=$(shell ls boot.nasm | sed -e 's/nasm/bin/')
+SRC!= ls boot.nasm
+OBJ!= ls boot.nasm | sed -e 's/nasm/bin/'
 
 all: stage1
 	@echo "[1] Done."
@@ -8,7 +8,7 @@ stage1: ${OBJ}
 	@echo "[0] Building Stage1"
 
 ${OBJ}: ${SRC}
-	@nasm -f bin $< -o loader.bin
+	@nasm -f bin ${.ALLSRC} -o loader.bin
 
 .PHONY: clean run
 
