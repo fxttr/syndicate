@@ -3,20 +3,24 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils/master";
   };
 
-  outputs = { self, nixpkgs, flake-utils }: 
-      flake-utils.lib.eachDefaultSystem
-        (system:
-          let pkgs = nixpkgs.legacyPackages.${system}; in
-          {
-            inherit pkgs;
-            devShells.default = pkgs.mkShell {
-                buildInputs = [
-                  pkgs.nasm
-                ];
-              };
-          }
-        );
+  outputs = { self, nixpkgs, ... }: {
+    packages.x86_64-linux.syndicate =
+      let pkgs = import nixpkgs {
+            system = "x86_64-linux";
+          };
+      in pkgs.stdenv.mkDerivation {
+        pname = "syndicate";
+        version = "0.0.1";
+        src = ./.;
+
+        nativeBuildInputs = with pkgs; [
+          gnumake
+          nasm
+        ];
+      };
+
+    defaultPackage.x86_64-linux = self.packages.x86_64-linux.syndicate;
+  };
 }
