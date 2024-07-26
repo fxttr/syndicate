@@ -27,17 +27,17 @@
 
 __oem_id:                  db 		"Syndicate"
 __bytes_per_sector:        dw 		0x0200
-__sectors_per_cluster:     db 		0x08
-__reserved_sectors:        dw 		0x0020
+__sectors_per_cluster:     db 		0x01
+__reserved_sectors:        dw 		0x0001
 __total_FATs:              db 		0x02
-__max_root_entries:        dw 		0x0000
+__max_root_entries:        dw 		0x00e0
 __number_of_sectors:       dw 		0x0000
 __media_descriptor:        db 		0xF8
-__sectors_per_FAT:         dw 		0x0000
-__sectors_per_track:       dw 		0x003D
+__sectors_per_FAT:         dw 		0x0009
+__sectors_per_track:       dw 		0x0012
 __sectors_per_head:        dw 		0x0002
 __hidden_sectors:          dd 		0x00000000
-__total_sectors:     	   dd 		0x00FE3B1F		
+__total_sectors:     	   dd 		0x00000B40		
 __big_sectors_per_FAT:     dd 		0x00000778
 __flags:                   dw 		0x0000
 __fs_version:              dw 		0x0000
@@ -49,7 +49,7 @@ __reserved_byte:           db   	0x00
 __signature:               db 		0x29
 __volume_id:               dd 		0xFFFFFFFF
 __volume_label:            db 		"Syndicate boot"
-__system_id:               db 		"FAT32   "
+__system_id:               db 		"FAT16   "
 
 ;; ----------------------------------------------------------
 ;; Preparing the bootloader for reading FAT32 partitions
@@ -114,7 +114,9 @@ _read_disk_sectors:
 	pop bx
 	pop ax
 	jnz .loop		; Try again if di not zero
-	int 0x18
+	mov si, __not_bootable
+	call printer
+	int 0x18		; Disk is not bootable, stopping boot
 .success:
 	mov si, __progress_bar
 	call printer
@@ -140,8 +142,9 @@ _chs_conv:
 	mov BYTE[__absolute_track], al
 	ret
 
+__not_bootable: db 0xD, 0xA, "Could not read FAT.", 0xD, 0xA, 0x00
 __progress_bar: db "*", 0x00
-__progress_bar_done: db "*", 0xD, 0xE, 0x00
+__progress_bar_done: db "*", 0xD, 0xA, 0x00
 __absolute_sector: db 0x00
 __absolute_head: db 0x00
 __absolute_track: db 0x00
