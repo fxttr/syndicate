@@ -94,7 +94,7 @@ prepare_fs:
 	mov bx, 0x0200
 	call _read_disk_sectors
 
-	retf
+	ret
 
 	
 

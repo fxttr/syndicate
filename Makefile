@@ -20,6 +20,9 @@ img: clean all
 	@gpart add -t \!11 md0
 	@newfs_msdos -F32 -b 512 /dev/md0s1
 	@dd if=loader.bin of=os.img seek=0 count=1 bs=512 conv=notrunc
+#@mount -t msdosfs /dev/md0s1 /mnt
+#@cp /home/florian/Devel/MSON/build/kernel/MSON /mnt
+#@umount /mnt
 
 run: img
 	qemu-system-x86_64 -hda /dev/md0
